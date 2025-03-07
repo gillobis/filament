@@ -1,0 +1,69 @@
+<?php
+
+namespace App\Providers\Filament;
+
+use App\Models\Impianto;
+use App\Models\Utenza;
+use Filament\Http\Middleware\Authenticate;
+use Filament\Http\Middleware\AuthenticateSession;
+use Filament\Http\Middleware\DisableBladeIconComponents;
+use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationManager;
+use Filament\Pages;
+use Filament\Panel;
+use Filament\PanelProvider;
+use Filament\Support\Colors\Color;
+use Filament\View\LegacyComponents\Widget;
+use Filament\Widgets;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
+
+class AdminPanelProvider extends PanelProvider
+{
+    public function panel(Panel $panel): Panel
+    {
+        return $panel
+            ->default()
+            ->id('admin')
+            ->path('/')
+            ->login()
+            ->passwordReset()
+            ->profile()
+            ->favicon(asset('favicon.png'))
+            ->databaseNotifications()
+            ->colors([
+                'primary' => Color::hex('#b61925'),
+            ])
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
+            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->pages([
+                //Pages\Dashboard::class,
+            ])
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->widgets([
+                //Widgets\AccountWidget::class,
+                //Widgets\FilamentInfoWidget::class,
+                \App\Filament\Widgets\StatsOverview::class,
+                \App\Filament\Widgets\Letture::class,
+            ])
+            ->middleware([
+                EncryptCookies::class,
+                AddQueuedCookiesToResponse::class,
+                StartSession::class,
+                AuthenticateSession::class,
+                ShareErrorsFromSession::class,
+                VerifyCsrfToken::class,
+                SubstituteBindings::class,
+                DisableBladeIconComponents::class,
+                DispatchServingFilamentEvent::class,
+            ])
+            ->authMiddleware([
+                Authenticate::class,
+            ])
+            ->tenant(Impianto::class, 'nome');
+    }
+}
